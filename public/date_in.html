@@ -46,13 +46,13 @@
             align-items: flex-start;
         }
         .search-box {
-            flex: 2;
+            flex: 2.5;
             border: 1px solid #ccc;
             padding: 15px;
             border-radius: 6px;
             background: #f8f9fa;
             display: grid;
-            grid-template-columns: 1fr 2fr auto auto;
+            grid-template-columns: 1fr 1fr 1fr auto auto;
             gap: 15px;
             align-items: center;
         }
@@ -72,12 +72,14 @@
             margin-bottom: 5px;
             text-transform: uppercase;
         }
-        .control-group input {
+        .control-group input, .control-group select {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 13px;
+            height: 35px;
+            background: white;
         }
         .btn {
             padding: 8px 20px;
@@ -140,7 +142,7 @@
         <a href="/dashboard.html" class="back-link">← ត្រឡប់ទៅ Main Menu</a>
     </div>
 
-    <!-- ផ្នែក Search From Date និង Total -->
+    <!-- ផ្នែក Search From Date, To Date, Size និង Total -->
     <div class="search-section">
         <div class="search-box">
             <div class="control-group">
@@ -150,6 +152,15 @@
             <div class="control-group">
                 <label>TO DATE</label>
                 <input type="date" id="txtToDate">
+            </div>
+            <div class="control-group">
+                <label>SIZE</label>
+                <select id="txtSize">
+                    <option value="">ALL</option>
+                    <option value="20">20</option>
+                    <option value="40">40</option>
+                    <option value="45">45</option>
+                </select>
             </div>
             <button class="btn" onclick="searchByDate()">SEARCH</button>
             <button class="btn btn-close" onclick="window.location.href='/dashboard.html'">CLOSE</button>
@@ -215,6 +226,7 @@
     async function searchByDate() {
         let fromDate = document.getElementById('txtFromDate').value;
         let toDate = document.getElementById('txtToDate').value;
+        let selectedSize = document.getElementById('txtSize').value;
 
         if (!fromDate || !toDate) {
             alert("Please select both From Date and To Date!");
@@ -223,6 +235,10 @@
 
         try {
             let url = `${API_BASE}/api/containers?from_date=${fromDate}&to_date=${toDate}`;
+            if (selectedSize) {
+                url += `&size=${selectedSize}`;
+            }
+
             let res = await fetch(url);
             let json = await res.json();
 
@@ -253,13 +269,13 @@
 
             document.getElementById('txtTotal').innerText = rCount;
             
-            // 🟢 ហៅកត់ត្រាចូល Activity Log ពេលធ្វើការស្វែងរកតាមកាលបរិច្ឆេទ
-            await logUserActivity("SEARCH_DATE", "CONTAINER_DATE_IN", "", `Searched containers from ${fromDate} to ${toDate}, found ${rCount} records`);
+            // 🟢 ហៅកត់ត្រាចូល Activity Log ពេលធ្វើការស្វែងរក
+            await logUserActivity("SEARCH_DATE", "CONTAINER_DATE_IN", "", `Searched containers from ${fromDate} to ${toDate} (Size: ${selectedSize || 'ALL'}), found ${rCount} records`);
 
             if (rCount > 0) {
                 alert(`Data loaded successfully! Total: ${rCount} containers.`);
             } else {
-                alert("No data found for the selected date range!");
+                alert("No data found for the selected criteria!");
             }
 
         } catch (err) {
